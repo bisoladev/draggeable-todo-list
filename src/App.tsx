@@ -1,6 +1,6 @@
 function App() {
   return (
-    <div>
+    <div className="h-screen w-full">
       <p>Hello world</p>
       <h1>Bisola</h1>
     </div>
