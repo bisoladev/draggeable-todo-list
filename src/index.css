@@ -14,6 +14,9 @@ body {
   .card-shadow {
     @apply shadow-[0px_35px_50px_-15px_rgba(0,0,0,0.50)];
   }
+  .category-btn {
+    @apply font-medium hover:text-[#494C6B] dark:hover:text-[#E3E4F1];
+  }
 }
 
 @layer utilities {

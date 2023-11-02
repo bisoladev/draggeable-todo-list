@@ -5,6 +5,7 @@ import List from './list';
 type ListItem = {
   id: string;
   title: string;
+  done: boolean;
 };
 
 const getLocalStorage = (): ListItem[] => {
@@ -16,6 +17,7 @@ const getLocalStorage = (): ListItem[] => {
 function App() {
   const [name, setName] = useState('');
   const [list, setList] = useState(getLocalStorage());
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     // Check for system preference
@@ -40,11 +42,15 @@ function App() {
     e.preventDefault();
 
     // If the user passes in an empty string
-    if (!name) {
+    if (!name || name.trim().length === 0) {
       // display alert
       console.log('ddd');
     } else {
-      const newItem = { id: new Date().getTime().toString(), title: name };
+      const newItem = {
+        id: new Date().getTime().toString(),
+        title: name,
+        done: false,
+      };
       setList([...list, newItem]);
       setName('');
     }
@@ -61,6 +67,20 @@ function App() {
   useEffect(() => {
     localStorage.setItem('list', JSON.stringify(list));
   }, [list]);
+
+  const toggleItemDone = (
+    _event: React.MouseEvent<HTMLButtonElement>,
+    id: string
+  ) => {
+    const updatedList = list.map((item) =>
+      item.id === id ? { ...item, done: !item.done } : item
+    );
+    setList(updatedList);
+    localStorage.setItem('list', JSON.stringify(updatedList)); // Update local storage
+  };
+
+  const activeTasksCount = list.filter((item) => !item.done).length;
+  const completedTasksCount = list.filter((item) => item.done).length;
 
   return (
     <div className="h-screen w-full bg-light bg-contain bg-no-repeat text-xs transition dark:bg-bgDark dark:bg-dark max-[768px]:bg-[length:auto_200px] md:text-lg">
@@ -91,23 +111,51 @@ function App() {
             list.length !== 0 ? 'opacity-100' : 'opacity-0'
           } card-shadow rounded bg-bgLight transition-opacity dark:bg-cardBgDark`}
         >
-          <List items={list} removeItem={removeItem} />
+          <List
+            items={list}
+            removeItem={removeItem}
+            toggleItemDone={toggleItemDone}
+            filter={filter}
+          />
           <div className="">
-            <div className="flex justify-between px-5 py-4 text-sm font-normal text-[#9495A5]">
-              <p>5 items left</p>
+            <div className="flex justify-between px-5 py-4 text-sm font-normal text-[#9495A5] dark:text-[#5B5E7E]">
+              {filter === 'all' || filter === 'active' ? (
+                <p>{activeTasksCount ?? 0} items left</p>
+              ) : (
+                <p>{completedTasksCount ?? 0} items done</p>
+              )}
+
               <div className="hidden sm:inline-block">
-                <button type="button" className="font-medium text-activeText ">
+                <button
+                  type="button"
+                  className={`${
+                    filter === 'all'
+                      ? 'text-activeText'
+                      : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
+                  } remove-highlight`}
+                  onClick={() => setFilter('all')}
+                >
                   All
                 </button>
                 <button
                   type="button"
-                  className="px-5 font-medium  hover:text-[#494C6B] dark:hover:text-[#E3E4F1]"
+                  className={`${
+                    filter === 'active'
+                      ? 'text-activeText'
+                      : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
+                  } remove-highlight px-5`}
+                  onClick={() => setFilter('active')}
                 >
                   Active
                 </button>
                 <button
                   type="button"
-                  className="font-medium hover:text-[#494C6B]  dark:hover:text-[#E3E4F1]"
+                  className={`${
+                    filter === 'completed'
+                      ? 'text-activeText'
+                      : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
+                  } remove-highlight`}
+                  onClick={() => setFilter('completed')}
                 >
                   Completed
                 </button>
@@ -115,7 +163,7 @@ function App() {
               <div>
                 <button
                   type="button"
-                  className="font-normal hover:text-[#494C6B] dark:hover:text-[#E3E4F1]"
+                  className="remove-highlight font-normal hover:text-[#494C6B] dark:hover:text-[#E3E4F1]"
                   onClick={clearList}
                 >
                   Clear Completed
@@ -124,32 +172,51 @@ function App() {
             </div>
           </div>
         </div>
-
-        {list.length !== 0 && (
-          <div className="card-shadow mt-4 flex justify-center rounded bg-bgLight py-4 font-semibold dark:bg-cardBgDark sm:hidden">
-            <button type="button" className="remove-highlight text-activeText">
-              All
-            </button>
-            <button
-              type="button"
-              className="remove-highlight px-5 hover:text-[#494C6B] dark:hover:text-[#E3E4F1]"
-            >
-              Active
-            </button>
-            <button
-              type="button"
-              className="remove-highlight hover:text-[#494C6B] dark:hover:text-[#E3E4F1]"
-            >
-              Completed
-            </button>
-          </div>
-        )}
+        <div
+          className={`${
+            list.length !== 0 ? 'opacity-100' : 'opacity-0'
+          } card-shadow mt-4 flex justify-center rounded bg-bgLight py-4 font-semibold dark:bg-cardBgDark sm:hidden`}
+        >
+          <button
+            type="button"
+            className={`${
+              filter === 'all'
+                ? 'text-activeText'
+                : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
+            } remove-highlight`}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            className={`${
+              filter === 'active'
+                ? 'text-activeText'
+                : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
+            } remove-highlight px-5`}
+          >
+            Active
+          </button>
+          <button
+            type="button"
+            className={`${
+              filter === 'completed'
+                ? 'text-activeText'
+                : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
+            } remove-highlight`}
+          >
+            Completed
+          </button>
+        </div>
       </div>
-      {list.length !== 0 && (
-        <p className="text-center text-sm text-grey dark:text-darkNote">
-          Drag and drop to reorder list
-        </p>
-      )}
+
+      <p
+        className={`${
+          list.length !== 0 ? 'opacity-100' : 'opacity-0'
+        } text-center text-sm text-grey dark:text-darkNote`}
+      >
+        Drag and drop to reorder list
+      </p>
     </div>
   );
 }
