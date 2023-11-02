@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { moon, sun } from './icons';
-import List from './list';
+import List from './ListComponent';
 
 type ListItem = {
   id: string;
