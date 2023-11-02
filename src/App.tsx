@@ -44,6 +44,7 @@ function App() {
     // If the user passes in an empty string
     if (!name || name.trim().length === 0) {
       // display alert
+      // eslint-disable-next-line no-console
       console.log('ddd');
     } else {
       const newItem = {
