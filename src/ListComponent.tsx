@@ -1,32 +1,54 @@
+/* eslint-disable no-return-assign */
+import { useRef } from 'react';
+
 type ListItem = {
-  id: string;
+  id: number;
   title: string;
   done: boolean;
 };
 
 type ListProps = {
   items: ListItem[];
-  removeItem: (id: string) => void;
+  removeItem: (id: number) => void;
   toggleItemDone: (
     event: React.MouseEvent<HTMLButtonElement>,
-    id: string
+    id: number
   ) => void;
   filter: 'all' | 'active' | 'completed';
 };
 function List({ items, removeItem, toggleItemDone, filter }: ListProps) {
-  const filteredItems = items.filter((item) => {
+  let filteredItems = items.filter((item) => {
     if (filter === 'all') return true;
     if (filter === 'active') return !item.done;
     if (filter === 'completed') return item.done;
     return false;
   });
+
+  const dragPerson = useRef<number>(0);
+  const draggedOverPerson = useRef<number>(0);
+
+  function handleSort() {
+    const todoClone = [...filteredItems];
+    const temp = todoClone[dragPerson.current];
+    todoClone[dragPerson.current] = todoClone[draggedOverPerson.current];
+    todoClone[draggedOverPerson.current] = temp;
+    filteredItems = todoClone;
+  }
+
   return (
     <div className="max-h-[390px] overflow-y-scroll md:max-h-[414px]">
       {filteredItems.map((item) => {
         const { id, title, done } = item;
-
         return (
-          <article className="" key={id}>
+          <article
+            className=""
+            key={id}
+            draggable
+            onDragStart={() => (dragPerson.current = id)}
+            onDragEnter={() => (draggedOverPerson.current = id)}
+            onDragEnd={handleSort}
+            onDragOver={(e) => e.preventDefault()}
+          >
             <div className="flex justify-between border-b border-solid border-[#E3E4F1] p-5 dark:border-[#393A4B]">
               <div className="flex">
                 <button

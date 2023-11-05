@@ -3,7 +3,7 @@ import { moon, sun } from './icons';
 import List from './ListComponent';
 
 type ListItem = {
-  id: string;
+  id: number;
   title: string;
   done: boolean;
 };
@@ -18,6 +18,9 @@ function App() {
   const [name, setName] = useState('');
   const [list, setList] = useState(getLocalStorage());
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+
+  // Initialize the counter for generating numeric ids
+  const [idCounter, setIdCounter] = useState<number>(list.length);
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     // Check for system preference
@@ -48,10 +51,13 @@ function App() {
       console.log('ddd');
     } else {
       const newItem = {
-        id: new Date().getTime().toString(),
+        id: idCounter,
         title: name,
         done: false,
       };
+      // Increment the idCounter for the next item
+      setIdCounter(idCounter + 1);
+
       setList([...list, newItem]);
       setName('');
     }
@@ -61,7 +67,7 @@ function App() {
     setList([]);
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = (id: number) => {
     setList(list.filter((item) => item.id !== id));
   };
 
@@ -71,7 +77,7 @@ function App() {
 
   const toggleItemDone = (
     _event: React.MouseEvent<HTMLButtonElement>,
-    id: string
+    id: number
   ) => {
     const updatedList = list.map((item) =>
       item.id === id ? { ...item, done: !item.done } : item
@@ -167,7 +173,7 @@ function App() {
                   className="remove-highlight font-normal hover:text-[#494C6B] dark:hover:text-[#E3E4F1]"
                   onClick={clearList}
                 >
-                  Clear Completed
+                  Clear List
                 </button>
               </div>
             </div>
@@ -185,6 +191,7 @@ function App() {
                 ? 'text-activeText'
                 : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
             } remove-highlight`}
+            onClick={() => setFilter('all')}
           >
             All
           </button>
@@ -195,6 +202,7 @@ function App() {
                 ? 'text-activeText'
                 : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
             } remove-highlight px-5`}
+            onClick={() => setFilter('active')}
           >
             Active
           </button>
@@ -205,6 +213,7 @@ function App() {
                 ? 'text-activeText'
                 : 'category-btn text-[#9495A5] dark:text-[#5B5E7E]'
             } remove-highlight`}
+            onClick={() => setFilter('completed')}
           >
             Completed
           </button>
